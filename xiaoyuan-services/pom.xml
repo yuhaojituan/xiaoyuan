@@ -4,13 +4,67 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>xiaoyuan</artifactId>
-        <groupId>com.heima</groupId>
+        <groupId>com.yuhaojituan</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>xiaoyuan-services</artifactId>
     <packaging>pom</packaging>
+    <modules>
+        <module>admin-service</module>
+    </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.yuhaojituan</groupId>
+            <artifactId>xiaoyuan-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yuhaojituan</groupId>
+            <artifactId>xiaoyuan-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yuhaojituan</groupId>
+            <artifactId>xiaoyuan-utils</artifactId>
+        </dependency>
+        <!-- Spring boot starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- services 使用 knife -->
+        <dependency>
+            <artifactId>yuhaojituan-knife4j-spring-boot-starter</artifactId>
+            <groupId>com.yuhaojituan</groupId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <!-- 统一异常处理依赖 引入后就不用在try catch异常啦 ~~ -->
+        <dependency>
+            <groupId>com.yuhaojituan</groupId>
+            <artifactId>yuhaojituan-exception-spring-boot-starter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+
+        <!-- nacos 注册中心  客户端依赖 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <!-- nacos 配置中心  客户端依赖 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+
+    </dependencies>
 
 </project>

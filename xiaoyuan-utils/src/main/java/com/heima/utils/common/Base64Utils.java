@@ -1,4 +1,4 @@
-package com.heima.utils.common;
+package com.yuhaojituan.utils.common;
 import java.util.Base64;
 public class Base64Utils {
     /**

@@ -1,4 +1,4 @@
-package com.heima.utils.common;
+package com.yuhaojituan.utils.common;
 
 /**
  * Twitter_Snowflake<br>

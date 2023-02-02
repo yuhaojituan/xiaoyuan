@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-package com.heima.utils.common;
+package com.yuhaojituan.utils.common;
 
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;

@@ -1,4 +1,4 @@
-package com.heima.utils.common;
+package com.yuhaojituan.utils.common;
 
 import java.io.BufferedReader;
 import java.io.IOException;

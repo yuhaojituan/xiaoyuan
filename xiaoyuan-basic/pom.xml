@@ -13,5 +13,7 @@
     <modules>
         <module>yuhaojituan-knife4j-spring-boot-starter</module>
         <module>yuhaojituan-exception-spring-boot-starter</module>
+        <module>yuhaojituan-file-spring-boot-starter</module>
+        <module>yuhaojituan-aliyunsecurity-spring-boot-starter</module>
     </modules>
 </project>

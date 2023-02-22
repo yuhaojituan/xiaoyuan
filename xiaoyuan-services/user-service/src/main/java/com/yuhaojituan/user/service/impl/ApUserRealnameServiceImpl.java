@@ -21,6 +21,7 @@ import com.yuhaojituan.model.wemedia.pojos.WmUser;
 import com.yuhaojituan.user.mapper.ApUserMapper;
 import com.yuhaojituan.user.mapper.ApUserRealnameMapper;
 import com.yuhaojituan.user.service.ApUserRealnameService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,8 +56,7 @@ public class ApUserRealnameServiceImpl extends ServiceImpl<ApUserRealnameMapper,
         IPage<ApUserRealname> resultPage = page(page, lambdaQueryWrapper);
 
         // 3 返回结果
-        return new PageResponseResult(dto.getPage(), dto.getSize(),
-                resultPage.getTotal(), resultPage.getRecords());
+        return new PageResponseResult(dto.getPage(), dto.getSize(), resultPage.getTotal(), resultPage.getRecords());
     }
 
     @Autowired
@@ -67,8 +67,12 @@ public class ApUserRealnameServiceImpl extends ServiceImpl<ApUserRealnameMapper,
     ArticleFeign articleFeign;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    //本地事务不行
+    // @Transactional(rollbackFor = Exception.class)
     //如果抛异常就回滚
+    //分布式事务
+    //300秒为断点延长时间
+    @GlobalTransactional(rollbackFor = Exception.class, timeoutMills = 30000)
     public ResponseResult updateStatusById(AuthDTO dto, Short status) {
         //1 参数检查
         if (dto.getId() == null) {
@@ -81,14 +85,12 @@ public class ApUserRealnameServiceImpl extends ServiceImpl<ApUserRealnameMapper,
             CustException.cust(AppHttpCodeEnum.DATA_NOT_ALLOW, "不是待审核状态");
         }
         //4.根据userid 查user表
-        ApUser apUser = apUserMapper.selectOne(Wrappers.<ApUser>lambdaQuery()
-                .eq(ApUser::getId, apUserRealname.getUserId()));
-        if(apUser == null){
+        ApUser apUser = apUserMapper.selectOne(Wrappers.<ApUser>lambdaQuery().eq(ApUser::getId, apUserRealname.getUserId()));
+        if (apUser == null) {
             CustException.cust(AppHttpCodeEnum.DATA_NOT_EXIST, "user表中不存在这个realname数据");
         }
 
         //上面都满足才update
-
         //下面三个是都会修改的
         // 更新认证用户信息
         apUserRealname.setStatus(status);
@@ -107,6 +109,8 @@ public class ApUserRealnameServiceImpl extends ServiceImpl<ApUserRealnameMapper,
             //4.2 创建作者信息
             createApAuthor(wmUser);
         }
+        //抛出异常 测试回滚
+        //CustException.cust(AppHttpCodeEnum.PARAM_INVALID);
         //5 返回结果
         return ResponseResult.okResult();
     }

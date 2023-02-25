@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yuhaojituan.common.constants.message.NewsAutoScanConstants;
 import com.yuhaojituan.common.constants.wemiedia.WemediaConstants;
 import com.yuhaojituan.common.exception.CustException;
 import com.yuhaojituan.model.common.dtos.PageResponseResult;
@@ -22,6 +23,7 @@ import com.yuhaojituan.wemedia.mapper.WmNewsMapper;
 import com.yuhaojituan.wemedia.mapper.WmNewsMaterialMapper;
 import com.yuhaojituan.wemedia.service.WmNewsService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,8 +124,16 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
         //关联文章封面中的图片和素材关系  封面可能是选择自动或者是无图
         saveRelativeInfoForCover(dto, materials, wmNews);
 
+
+        //发送到待审核队列
+        rabbitTemplate.convertAndSend(NewsAutoScanConstants.WM_NEWS_AUTO_SCAN_QUEUE, wmNews.getId());
+
+
         return ResponseResult.okResult();
     }
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 图片列表转字符串，并去除图片前缀

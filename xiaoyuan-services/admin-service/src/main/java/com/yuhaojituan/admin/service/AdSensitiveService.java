@@ -5,7 +5,15 @@ import com.yuhaojituan.model.admin.dtos.SensitiveDTO;
 import com.yuhaojituan.model.admin.pojos.AdSensitive;
 import com.yuhaojituan.model.common.dtos.ResponseResult;
 
+import java.util.List;
+
 public interface AdSensitiveService extends IService<AdSensitive> {
+
+    /**
+     * 查询敏感词内容列表
+     * @return
+     */
+    public ResponseResult<List<String>> selectAllSensitives();
 
     /**
      * 查询敏感词列表

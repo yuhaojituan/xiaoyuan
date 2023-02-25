@@ -13,6 +13,7 @@ import com.yuhaojituan.model.common.dtos.PageResponseResult;
 import com.yuhaojituan.model.common.dtos.ResponseResult;
 import com.yuhaojituan.model.common.enums.AppHttpCodeEnum;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,5 +83,13 @@ public class AdSensitiveServiceImpl extends ServiceImpl<AdSensitiveMapper, AdSen
         //3.删除
         removeById(id);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @Autowired AdSensitiveMapper adSensitiveMapper;
+
+
+    @Override
+    public ResponseResult selectAllSensitives() {
+        return ResponseResult.okResult(adSensitiveMapper.findAllSensitives());
     }
 }

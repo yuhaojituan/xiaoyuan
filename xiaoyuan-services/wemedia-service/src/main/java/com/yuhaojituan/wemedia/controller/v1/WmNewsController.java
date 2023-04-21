@@ -43,6 +43,13 @@ public class WmNewsController {
     @GetMapping("/one/{id}")
     public ResponseResult<WmNews> findWmNewsById(@PathVariable("id") Integer id){
          return ResponseResult.okResult(wmNewsService.getById(id));
-    };
+    }
+
+
+    @ApiOperation(value = "自媒体文章上架或下架",notes = "enable 上架: 1 下架: 0")
+    @PostMapping("/down_or_up")
+    public ResponseResult downOrUp(@RequestBody WmNewsDTO dto) {
+        return wmNewsService.downOrUp(dto);
+    }
 
 }

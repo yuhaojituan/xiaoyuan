@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
+
 @SpringBootTest
 public class FeignTest {
 
@@ -30,6 +32,22 @@ public class FeignTest {
     public void articleFeign() {
         ResponseResult<ApAuthor> byUserId = articleFeign.findByUserId(1);
         System.out.println(byUserId);
+    }
+
+    @Test
+    public void maoPao() {
+        int[] a = {1, 3, 5, 7, 9, 2, 4, 6, 8, 10};
+
+        for (int i=0;i<a.length-1;i++) {
+            for (int j = 0; j < a.length - 1-i; j++) {
+                if (a[j] > a[j + 1]) {
+                    int temp = a[j + 1];
+                    a[j+1]=a[j];
+                    a[j]=temp;
+                }
+            }
+        }
+
     }
 
 }

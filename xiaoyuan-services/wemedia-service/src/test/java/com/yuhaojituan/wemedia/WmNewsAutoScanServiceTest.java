@@ -1,5 +1,6 @@
 package com.yuhaojituan.wemedia;
 
+import com.yuhaojituan.file.service.impl.OSSAliyunFileStorageService;
 import com.yuhaojituan.wemedia.service.WmNewsAutoScanService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +14,10 @@ public class WmNewsAutoScanServiceTest {
 
     @Autowired
     private WmNewsAutoScanService wmNewsAutoScanService;
+
+    @Autowired
+    OSSAliyunFileStorageService ossAliyunFileStorageService;
+
 
     @Test
     public void autoScanWmNews() {

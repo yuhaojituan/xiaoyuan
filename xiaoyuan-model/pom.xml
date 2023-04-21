@@ -59,5 +59,13 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
+
+        <!--        实体类会用到mongo注解-->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 </project>

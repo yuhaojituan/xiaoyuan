@@ -13,6 +13,7 @@ import com.yuhaojituan.model.common.dtos.PageResponseResult;
 import com.yuhaojituan.model.common.dtos.ResponseResult;
 import com.yuhaojituan.model.common.enums.AppHttpCodeEnum;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -25,7 +26,6 @@ public class AdChannelServiceImpl extends ServiceImpl<AdchannelMapper, AdChannel
      * */
     @Override
     public ResponseResult findByNameAndPage(ChannelDTO dto) {
-
         // 1. 校验参数
         if (dto == null) {
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
@@ -33,7 +33,7 @@ public class AdChannelServiceImpl extends ServiceImpl<AdchannelMapper, AdChannel
         dto.checkParam(); // 检查分页
 
         // 2. 封装条件 执行查询
-        LambdaQueryWrapper<AdChannel> queryWrapper = Wrappers.<AdChannel>lambdaQuery();
+        LambdaQueryWrapper<AdChannel> queryWrapper = Wrappers.lambdaQuery();
         // 频道名称   状态
         if (StringUtils.isNotBlank(dto.getName())) {
             queryWrapper.like(AdChannel::getName, dto.getName());
@@ -56,8 +56,6 @@ public class AdChannelServiceImpl extends ServiceImpl<AdchannelMapper, AdChannel
 
     /**
      * 新增
-     * @param adChannel
-     * @return
      */
     @Override
     public ResponseResult insert(AdChannel adChannel) {

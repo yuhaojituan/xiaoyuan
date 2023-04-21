@@ -77,7 +77,6 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             // 4. 判断文章发布时间是否大于当前时间   状态 8
             updateWmNews(wmNews, WmNews.Status.SUCCESS.getCode(), "审核成功");
 
-            // 5. 通知定时发布文章
             //5. 通知定时发布文章
             // 发布时间
             long publishTime = wmNews.getPublishTime().getTime();
@@ -167,10 +166,6 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
 
     /**
      * 基于DFA 检测内容是否包含敏感词
-     *
-     * @param content
-     * @param wmNews
-     * @return
      */
     private boolean handleSensitive(String content, WmNews wmNews) {
         boolean flag = true;

@@ -7,12 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/**
- * @Description:  目的是给用户提供友好的提示信息
- * @Version: V1.0
- */
+
 @Slf4j
-@Configuration
+@Configuration   //这个注解是为了让spring扫描到controller advice
 @RestControllerAdvice   // Springmvc 异常处理拦截注解
 public class ExceptionCatch {
     /**

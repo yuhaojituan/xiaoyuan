@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.yuhaojituan.file.service.impl.OSSAliyunFileStorageService
+  com.yuhaojituan.file.service.impl.OSSAliyunFileStorageService,com.yuhaojituan.file.service.impl.MinIOFileStorageService

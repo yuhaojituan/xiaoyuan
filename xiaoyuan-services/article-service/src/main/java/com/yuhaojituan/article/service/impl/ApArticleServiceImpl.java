@@ -8,10 +8,13 @@ import com.yuhaojituan.article.mapper.ApArticleContentMapper;
 import com.yuhaojituan.article.mapper.ApArticleMapper;
 import com.yuhaojituan.article.mapper.AuthorMapper;
 import com.yuhaojituan.article.service.ApArticleService;
+import com.yuhaojituan.article.service.GeneratePageService;
+import com.yuhaojituan.common.constants.article.ArticleConstants;
 import com.yuhaojituan.common.exception.CustException;
 import com.yuhaojituan.feigns.AdminFeign;
 import com.yuhaojituan.feigns.WemediaFeign;
 import com.yuhaojituan.model.admin.pojos.AdChannel;
+import com.yuhaojituan.model.article.dtos.ArticleHomeDTO;
 import com.yuhaojituan.model.article.pojos.ApArticle;
 import com.yuhaojituan.model.article.pojos.ApArticleConfig;
 import com.yuhaojituan.model.article.pojos.ApArticleContent;
@@ -21,9 +24,16 @@ import com.yuhaojituan.model.common.enums.AppHttpCodeEnum;
 import com.yuhaojituan.model.wemedia.pojos.WmNews;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,6 +48,8 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
     private ApArticleConfigMapper apArticleConfigMapper;
     @Autowired
     private ApArticleContentMapper apArticleContentMapper;
+    @Autowired
+    private GeneratePageService generatePageService;
 
     //因为这里涉及远程调用操作多张表 所以事务
     @GlobalTransactional(rollbackFor = Exception.class, timeoutMills = 100000)
@@ -51,7 +63,8 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
         saveOrUpdateArticle(apArticle);
         // 4. 保存关联配置和内容信息
         saveConfigAndContent(wmNews, apArticle);
-        // 5. TODO 文章页面静态化
+        // 5. 文章页面静态化
+        generatePageService.generateArticlePage(wmNews.getContent(),apArticle);
         // 6. 更新 wmNews状态  改为9  并设置articleId
         updateWmNews(newsId, wmNews, apArticle);
         // 7. TODO 通知es索引库添加文章索引
@@ -170,4 +183,72 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
         apArticle.setAuthorName(author.getName());
         return apArticle;
     }
+
+
+    @Autowired
+    private ApArticleMapper apArticleMapper;
+    @Value("${file.oss.web-site}")
+    private String webSite;
+    @Value("${file.minio.readPath}")
+    private String readPath;
+    /**
+     * 根据参数加载文章列表
+     */
+    @Override
+    public ResponseResult load(Short loadtype, ArticleHomeDTO dto) {
+        //1 参数检查
+        // 页大小
+        Integer size = dto.getSize();
+        if (size == null || size <= 0) {
+            size = 10;
+        }
+        dto.setSize(size);
+        // 频道
+        if (StringUtils.isBlank(dto.getTag())) {
+            dto.setTag(ArticleConstants.DEFAULT_TAG);
+        }
+        // 时间
+        if (dto.getMaxBehotTime() == null) {
+            dto.setMaxBehotTime(new Date());
+        }
+        if (dto.getMinBehotTime() == null) {
+            dto.setMinBehotTime(new Date());
+        }
+        // 类型判断
+        if (!loadtype.equals(ArticleConstants.LOADTYPE_LOAD_MORE) && !loadtype.equals(ArticleConstants.LOADTYPE_LOAD_NEW)) {
+            loadtype = ArticleConstants.LOADTYPE_LOAD_MORE;
+        }
+
+
+        //2 执行查询
+        List<ApArticle> articleList = apArticleMapper.loadArticleList(dto, loadtype);
+        // 添加静态页面访问前缀  ===============新增代码=================
+        for (ApArticle apArticle : articleList) {
+            apArticle.setStaticUrl(readPath + apArticle.getStaticUrl());
+        }
+        //给图片加上网站前缀
+        for (ApArticle article : articleList) {
+            // 获取文章封面字段
+            String images = article.getImages();
+            if (StringUtils.isNotBlank(images)) {
+                // 将封面按照  ,号  切割   生成流
+                images = Arrays.stream(images.split(","))
+                        // 每一个路径添加前缀
+                        .map(url -> webSite + url)
+                        // 将加了前缀的路径  拼接成字符串
+                        .collect(Collectors.joining(","));
+                article.setImages(images);
+            }
+        }
+
+        //3 返回结果
+        ResponseResult result = ResponseResult.okResult(articleList);
+        return result;
+    }
+
+
+
+
+
+
 }

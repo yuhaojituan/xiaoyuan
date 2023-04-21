@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuhaojituan.common.constants.message.NewsAutoScanConstants;
+import com.yuhaojituan.common.constants.message.NewsUpOrDownConstants;
 import com.yuhaojituan.common.constants.wemiedia.WemediaConstants;
 import com.yuhaojituan.common.exception.CustException;
 import com.yuhaojituan.model.common.dtos.PageResponseResult;
@@ -42,9 +43,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     /**
      * 查询所有自媒体文章
-     *
-     * @param dto
-     * @return
      */
     @Override
     public ResponseResult findList(WmNewsPageReqDTO dto) {
@@ -137,9 +135,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     /**
      * 图片列表转字符串，并去除图片前缀
-     *
-     * @param images  图片列表
-     * @param webSite 图片前缀
      */
     private String imageListToStr(List<String> images, String webSite) {
         return images.stream()  // 获取流
@@ -152,8 +147,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     /**
      * 保存或修改文章
-     *
-     * @param wmNews 文章对象（前端传递）
      */
     private void saveWmNews(WmNews wmNews) {
         wmNews.setCreatedTime(new Date());
@@ -172,9 +165,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     /**
      * 抽取文章内容中 所引用的所有图片
-     *
-     * @param content 文章内容
-     * @return
      */
     private List<String> parseContentImages(String content) {
         List<Map> contents = JSON.parseArray(content, Map.class);
@@ -197,10 +187,6 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
 
     /**
      * 保存素材和文章关系
-     *
-     * @param urls   素材列表
-     * @param newsId 文章ID
-     * @param type   类型 0：内容素材  1：封面素材
      */
     private void saveRelativeInfo(List<String> urls, Integer newsId, Short type) {
         //1 查询文章内容中的图片对应的素材ID
@@ -250,4 +236,47 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
             saveRelativeInfo(images, wmNews.getId(), WemediaConstants.WM_IMAGE_REFERENCE);
         }
     }
+
+
+    @Override
+    public ResponseResult downOrUp(WmNewsDTO dto) {
+        //1.检查参数
+        if(dto == null || dto.getId() == null){
+            CustException.cust(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        Short enable = dto.getEnable();
+        if(enable == null ||
+                (!WemediaConstants.WM_NEWS_UP.equals(enable)&&!WemediaConstants.WM_NEWS_DOWN.equals(enable))){
+            CustException.cust(AppHttpCodeEnum.PARAM_INVALID,"上下架状态错误");
+        }
+        //2.查询文章
+        WmNews wmNews = getById(dto.getId());
+        if(wmNews == null){
+            CustException.cust(AppHttpCodeEnum.DATA_NOT_EXIST,"文章不存在");
+        }
+        //3.判断文章是否发布
+        if(!wmNews.getStatus().equals(WmNews.Status.PUBLISHED.getCode())){
+            CustException.cust(AppHttpCodeEnum.DATA_NOT_EXIST,"当前文章不是发布状态，不能上下架");
+        }
+        //4.修改文章状态，同步到app端（后期做）
+        update(Wrappers.<WmNews>lambdaUpdate().eq(WmNews::getId,dto.getId())
+                .set(WmNews::getEnable,dto.getEnable()));
+        //5. 上下架发送消息通知  用于同步article 及 elasticsearch
+
+        if (wmNews.getArticleId()!=null) {
+            if(enable.equals(WemediaConstants.WM_NEWS_UP)){
+                // 上架消息
+                rabbitTemplate.convertAndSend(NewsUpOrDownConstants.NEWS_UP_OR_DOWN_EXCHANGE,
+                        NewsUpOrDownConstants.NEWS_UP_ROUTE_KEY,wmNews.getArticleId());
+            }else {
+                // 下架消息
+                rabbitTemplate.convertAndSend(NewsUpOrDownConstants.NEWS_UP_OR_DOWN_EXCHANGE,
+                        NewsUpOrDownConstants.NEWS_DOWN_ROUTE_KEY,wmNews.getArticleId());
+            }
+        }
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+
+
 }
